@@ -8,6 +8,13 @@ import {
   FileText, DownloadCloud, Bell, MessageSquare, Info, Shield,
   Minus, Plus, Text, Send
 } from 'lucide-react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation
+} from 'react-router-dom';
 
 // Sample data for historical events
 const sampleEvents = [
@@ -293,7 +300,19 @@ const HeroSection = () => {
           </span>
         </p>
       </div>
-    </section>
+  </section>
+  );
+};
+
+// Home Page Component
+const HomePage = () => {
+  return (
+    <div>
+      <HeroSection />
+      <SearchBar />
+      <StoriesSection />
+      <QuoteSection />
+    </div>
   );
 };
 
@@ -1100,13 +1119,14 @@ const SettingsPage = ({ textSize, onTextSizeChange }) => {
 
 
 // Bottom Navigation Component
-const BottomNavigation = ({ currentPage, onPageChange }) => {
+const BottomNavigation = () => {
+  const location = useLocation();
   const navItems = [
-    { icon: Home, label: "Home", page: "home" },
-    { icon: BookOpen, label: "Timeline", page: "timeline" },
-    { icon: HelpCircle, label: "Quiz", page: "quiz" },
-    { icon: Download, label: "Download", page: "download" },
-    { icon: Settings, label: "Setting", page: "settings" },
+    { icon: Home, label: "Home", to: "/" },
+    { icon: BookOpen, label: "Timeline", to: "/timeline" },
+    { icon: HelpCircle, label: "Quiz", to: "/quiz" },
+    { icon: Download, label: "Download", to: "/download" },
+    { icon: Settings, label: "Setting", to: "/settings" },
   ];
 
   return (
@@ -1114,11 +1134,11 @@ const BottomNavigation = ({ currentPage, onPageChange }) => {
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto flex items-center justify-around py-2">
           {navItems.map((item) => {
-            const isActive = currentPage === item.page;
+            const isActive = location.pathname === item.to;
             return (
-              <button
-                key={item.page}
-                onClick={() => onPageChange(item.page)}
+              <Link
+                key={item.to}
+                to={item.to}
                 className="flex flex-col items-center p-2 rounded-xl transition-all duration-300 w-16"
               >
                 <div
@@ -1138,7 +1158,7 @@ const BottomNavigation = ({ currentPage, onPageChange }) => {
                 }`}>
                   {item.label}
                 </span>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -1149,64 +1169,32 @@ const BottomNavigation = ({ currentPage, onPageChange }) => {
 
 // Main App Component
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
   const [textSize, setTextSize] = useState('base'); // 'sm', 'base', 'lg'
-  const storiesRef = useRef(null);
-
-  const handleScrollToStories = () => {
-    if (storiesRef.current) {
-      storiesRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return (
-          <div>
-            <HeroSection />
-            <SearchBar />
-            <div ref={storiesRef}>
-              <StoriesSection />
-            </div>
-            <QuoteSection />
-          </div>
-        );
-      case 'timeline':
-        return <TimelinePage />;
-      case 'quiz':
-        return <QuizPage />;
-      case 'download':
-        return <DownloadPage />;
-      case 'settings':
-        return <SettingsPage textSize={textSize} onTextSizeChange={setTextSize} />;
-      default:
-        return (
-          <div className="min-h-screen flex items-center justify-center bg-[#E5E7EB]">
-            <div className="text-center p-8">
-              <h2 className="text-3xl font-bold text-[#A67C52] mb-4">
-                Halaman {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
-              </h2>
-              <p className="text-gray-700">
-                Fitur ini sedang dalam pengembangan
-              </p>
-            </div>
-          </div>
-        );
-    }
-  };
 
   return (
-    <div className={`min-h-screen bg-[#E5E7EB] text-${textSize}`}>
-      <main className="pb-24">
-        {renderCurrentPage()}
-      </main>
-      
-      <BottomNavigation
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
-    </div>
+    <Router>
+      <div className={`min-h-screen bg-[#E5E7EB] text-${textSize}`}>
+        <main className="pb-24">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/timeline" element={<TimelinePage />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/download" element={<DownloadPage />} />
+            <Route
+              path="/settings"
+              element={
+                <SettingsPage
+                  textSize={textSize}
+                  onTextSizeChange={setTextSize}
+                />
+              }
+            />
+          </Routes>
+        </main>
+
+        <BottomNavigation />
+      </div>
+    </Router>
   );
 };
 
